@@ -78,13 +78,13 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
 	if (pthread_mutex_init(&mutex1, NULL) != 0)
 	{
 		int err = errno;
-		perror("init");
+		perror("init1");
 		exit(err);
 	}
 	if (pthread_mutex_lock(&mutex1) != 0)
 	{
 		int err = errno;
-		perror("lock");
+		perror("lock1");
 		exit(err);
 	}
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
@@ -112,7 +112,7 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
 	if (pthread_mutex_destroy(&mutex1) != 0)
 	{
 		int err = errno;
-		perror("destroy");
+		perror("destroy1");
 		exit(err);
 	}
 }

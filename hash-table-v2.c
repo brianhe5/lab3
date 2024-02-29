@@ -79,13 +79,13 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if (pthread_mutex_init(&mutex2, NULL) != 0)
 	{
 		int err = errno;
-		perror("init");
+		perror("init2");
 		exit(err);
 	}
 	if (pthread_mutex_init(&mutex3, NULL) != 0)
 	{
 		int err = errno;
-		perror("init");
+		perror("init3");
 		exit(err);
 	}
 	//3 param: hash table, key-value pair
@@ -97,7 +97,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if (pthread_mutex_lock(&mutex2) != 0)
 	{
 		int err = errno;
-		perror("lock");
+		perror("lock2");
 		exit(err);
 	}
 	struct list_head *list_head = &hash_table_entry->list_head;
@@ -108,7 +108,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if(pthread_mutex_unlock(&mutex2) != 0)
 	{
 		int err = errno;
-		perror("unlockv2L1");
+		perror("unlock2");
 		exit(err);
 	}
 	/* Update the value if it already exists */
@@ -129,26 +129,26 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if (pthread_mutex_lock(&mutex3) != 0)
 	{
 		int err = errno;
-		perror("lock");
+		perror("lock3");
 		exit(err);
 	}
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
 	if(pthread_mutex_unlock(&mutex3) != 0)
 	{
 		int err = errno;
-		perror("unlockv2L2");
+		perror("unlock3");
 		exit(err);
 	}
 	if (pthread_mutex_destroy(&mutex2) != 0)
 	{
 		int err = errno;
-		perror("destroy");
+		perror("destroy2");
 		exit(err);
 	}
 	if (pthread_mutex_destroy(&mutex3) != 0)
 	{
 		int err = errno;
-		perror("destroy");
+		perror("destroy3");
 		exit(err);
 	}
 }

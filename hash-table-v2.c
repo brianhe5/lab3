@@ -9,6 +9,8 @@
 
 #include <pthread.h>
 
+static pthread_mutex_t mutex2;
+static pthread_mutex_t mutex3;
 struct list_entry {
 	const char *key;
 	uint32_t value;
@@ -74,8 +76,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
-	static pthread_mutex_t mutex2;
-	static pthread_mutex_t mutex3;
+
 	if (pthread_mutex_init(&mutex2, NULL) != 0)
 	{
 		int err = errno;

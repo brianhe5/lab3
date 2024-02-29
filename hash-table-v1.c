@@ -8,6 +8,7 @@
 #include <sys/queue.h>
 
 #include <pthread.h>
+static pthread_mutex_t mutex1;
 
 struct list_entry {
 	const char *key;

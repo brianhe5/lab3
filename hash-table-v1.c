@@ -106,7 +106,7 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
 	if(pthread_mutex_unlock(&mutex1) != 0)
 	{
 		int err = errno;
-		perror("unlockv1");
+		perror("unlock1");
 		exit(err);
 	}
 	if (pthread_mutex_destroy(&mutex1) != 0)

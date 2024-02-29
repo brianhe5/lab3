@@ -108,7 +108,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if(pthread_mutex_unlock(&mutex1) != 0)
 	{
 		int err = errno;
-		perror("unlock");
+		perror("unlockv2L1");
 		exit(err);
 	}
 	/* Update the value if it already exists */
@@ -136,7 +136,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	if(pthread_mutex_unlock(&mutex2) != 0)
 	{
 		int err = errno;
-		perror("unlock");
+		perror("unlockv2L2");
 		exit(err);
 	}
 	if (pthread_mutex_destroy(&mutex1) != 0)

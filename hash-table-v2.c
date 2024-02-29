@@ -1,6 +1,8 @@
 #include "hash-table-base.h"
 
+#include <errno.h>
 #include <assert.h>
+#include <stdio.h> //needed for perror
 #include <stdlib.h>
 #include <string.h>
 #include <sys/queue.h>
@@ -72,20 +74,83 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
+	static pthread_mutex_t mutex1;
+	static pthread_mutex_t mutex2;
+	if (pthread_mutex_init(&mutex1, NULL) != 0)
+	{
+		int err = errno;
+		perror("init");
+		exit(err);
+	}
+	if (pthread_mutex_init(&mutex2, NULL) != 0)
+	{
+		int err = errno;
+		perror("init");
+		exit(err);
+	}
+	//3 param: hash table, key-value pair
+	//pass in hash table as well as key: given table, take in key, pass through hash func, get index into hash table corresponding to key
+	//DONT LOCK HERE B/C JUST GETTING INDEX OF HASH TABLE ITSELF
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
+	//get notion of given that bucket, get buckets head (start of linked list)
+	//LOCK HERE B/C 2 THREADS OF SAME BUCKET, MAY POINT TO SAME ONE
+	if (pthread_mutex_lock(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("lock");
+		exit(err);
+	}
 	struct list_head *list_head = &hash_table_entry->list_head;
+	//get list entry, prop of hash table: no 2 elements can have same key, to prevent 2 nodes having same key, call this
+	//hash table key and head, given bucket that we were indexed into, do linear scan in that buckets LL, and check that key trying to insert doesnt exist in LL
+	//LOCK HERE FOR CASE THAT 2 WITH SAME KEY WILL THINK KEY DOES NOT EXIST YET
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
-
+	if(pthread_mutex_unlock(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("unlock");
+		exit(err);
+	}
 	/* Update the value if it already exists */
+	// 2 of same key cant exist
+	//insetad of creating new node, we find node through get list entry, override value to value we are trying to insert
+	//exit out of function as soon as we do that
 	if (list_entry != NULL) {
 		list_entry->value = value;
 		return;
 	}
-
+	//if list entry is null, creates a new node for new entry
+	//no same key, allocate memory for new ndode
+	//assign key and value, insert into LL now
 	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
+	//LOCK HERE FOR CASE OF POSSIBLE INSERTION TO SAME HEAD
+	if (pthread_mutex_lock(&mutex2) != 0)
+	{
+		int err = errno;
+		perror("lock");
+		exit(err);
+	}
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
+	if(pthread_mutex_unlock(&mutex2) != 0)
+	{
+		int err = errno;
+		perror("unlock");
+		exit(err);
+	}
+	if (pthread_mutex_destroy(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("destroy");
+		exit(err);
+	}
+	if (pthread_mutex_destroy(&mutex2) != 0)
+	{
+		int err = errno;
+		perror("destroy");
+		exit(err);
+	}
 }
 
 uint32_t hash_table_v2_get_value(struct hash_table_v2 *hash_table,

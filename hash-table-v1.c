@@ -1,6 +1,8 @@
 #include "hash-table-base.h"
 
+#include <errno.h>
 #include <assert.h>
+#include <stdio.h> //needed for perror
 #include <stdlib.h>
 #include <string.h>
 #include <sys/queue.h>
@@ -72,20 +74,47 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
                              const char *key,
                              uint32_t value)
 {
+	static pthread_mutex_t mutex1;
+	if (pthread_mutex_init(&mutex1, NULL) != 0)
+	{
+		int err = errno;
+		perror("init");
+		exit(err);
+	}
+	if (pthread_mutex_lock(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("lock");
+		exit(err);
+	}
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	struct list_head *list_head = &hash_table_entry->list_head;
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
 
 	/* Update the value if it already exists */
+	// 2 of same key cant exist
 	if (list_entry != NULL) {
 		list_entry->value = value;
 		return;
 	}
-
+	
+	//if list entry is null, creates a new node for new entry
 	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
+	if(pthread_mutex_unlock(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("unlock");
+		exit(err);
+	}
+	if (pthread_mutex_destroy(&mutex1) != 0)
+	{
+		int err = errno;
+		perror("destroy");
+		exit(err);
+	}
 }
 
 uint32_t hash_table_v1_get_value(struct hash_table_v1 *hash_table,

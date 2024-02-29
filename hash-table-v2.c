@@ -74,15 +74,15 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
-	static pthread_mutex_t mutex1;
 	static pthread_mutex_t mutex2;
-	if (pthread_mutex_init(&mutex1, NULL) != 0)
+	static pthread_mutex_t mutex3;
+	if (pthread_mutex_init(&mutex2, NULL) != 0)
 	{
 		int err = errno;
 		perror("init");
 		exit(err);
 	}
-	if (pthread_mutex_init(&mutex2, NULL) != 0)
+	if (pthread_mutex_init(&mutex3, NULL) != 0)
 	{
 		int err = errno;
 		perror("init");
@@ -94,7 +94,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 	//get notion of given that bucket, get buckets head (start of linked list)
 	//LOCK HERE B/C 2 THREADS OF SAME BUCKET, MAY POINT TO SAME ONE
-	if (pthread_mutex_lock(&mutex1) != 0)
+	if (pthread_mutex_lock(&mutex2) != 0)
 	{
 		int err = errno;
 		perror("lock");
@@ -105,7 +105,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	//hash table key and head, given bucket that we were indexed into, do linear scan in that buckets LL, and check that key trying to insert doesnt exist in LL
 	//LOCK HERE FOR CASE THAT 2 WITH SAME KEY WILL THINK KEY DOES NOT EXIST YET
 	struct list_entry *list_entry = get_list_entry(hash_table, key, list_head);
-	if(pthread_mutex_unlock(&mutex1) != 0)
+	if(pthread_mutex_unlock(&mutex2) != 0)
 	{
 		int err = errno;
 		perror("unlockv2L1");
@@ -126,26 +126,26 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	list_entry->key = key;
 	list_entry->value = value;
 	//LOCK HERE FOR CASE OF POSSIBLE INSERTION TO SAME HEAD
-	if (pthread_mutex_lock(&mutex2) != 0)
+	if (pthread_mutex_lock(&mutex3) != 0)
 	{
 		int err = errno;
 		perror("lock");
 		exit(err);
 	}
 	SLIST_INSERT_HEAD(list_head, list_entry, pointers);
-	if(pthread_mutex_unlock(&mutex2) != 0)
+	if(pthread_mutex_unlock(&mutex3) != 0)
 	{
 		int err = errno;
 		perror("unlockv2L2");
 		exit(err);
 	}
-	if (pthread_mutex_destroy(&mutex1) != 0)
+	if (pthread_mutex_destroy(&mutex2) != 0)
 	{
 		int err = errno;
 		perror("destroy");
 		exit(err);
 	}
-	if (pthread_mutex_destroy(&mutex2) != 0)
+	if (pthread_mutex_destroy(&mutex3) != 0)
 	{
 		int err = errno;
 		perror("destroy");

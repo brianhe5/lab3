@@ -8,7 +8,6 @@
 #include <sys/queue.h>
 
 #include <pthread.h>
-static pthread_mutex_t mutex1;
 
 struct list_entry {
 	const char *key;
@@ -17,6 +16,7 @@ struct list_entry {
 };
 
 SLIST_HEAD(list_head, list_entry);
+// static pthread_mutex_t mutex1;
 
 struct hash_table_entry {
 	struct list_head list_head;
@@ -75,6 +75,7 @@ void hash_table_v1_add_entry(struct hash_table_v1 *hash_table,
                              const char *key,
                              uint32_t value)
 {
+	static pthread_mutex_t mutex1;
 	if (pthread_mutex_init(&mutex1, NULL) != 0)
 	{
 		int err = errno;

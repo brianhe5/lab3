@@ -9,8 +9,8 @@
 
 #include <pthread.h>
 
-static pthread_mutex_t mutex2;
-static pthread_mutex_t mutex3;
+// static pthread_mutex_t mutex2;
+// static pthread_mutex_t mutex3;
 struct list_entry {
 	const char *key;
 	uint32_t value;
@@ -76,7 +76,8 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
-
+	static pthread_mutex_t mutex2;
+	static pthread_mutex_t mutex3;
 	if (pthread_mutex_init(&mutex2, NULL) != 0)
 	{
 		int err = errno;
@@ -93,6 +94,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	//pass in hash table as well as key: given table, take in key, pass through hash func, get index into hash table corresponding to key
 	//DONT LOCK HERE B/C JUST GETTING INDEX OF HASH TABLE ITSELF
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
+	
 	//get notion of given that bucket, get buckets head (start of linked list)
 	//LOCK HERE B/C 2 THREADS OF SAME BUCKET, MAY POINT TO SAME ONE
 	if (pthread_mutex_lock(&mutex2) != 0)

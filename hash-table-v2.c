@@ -131,6 +131,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	// 	perror("lock3");
 	// 	exit(err);
 	// }
+	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
 	//LOCK HERE FOR CASE OF POSSIBLE INSERTION TO SAME HEAD

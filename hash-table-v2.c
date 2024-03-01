@@ -18,15 +18,14 @@ struct list_entry {
 SLIST_HEAD(list_head, list_entry);
 // static pthread_mutex_t mutex2;
 // static pthread_mutex_t mutex3;
-
+//lock per bucket
+pthread_mutex_t bucket_mutexes[HASH_TABLE_CAPACITY];
 struct hash_table_entry {
 	struct list_head list_head;
 };
 
 struct hash_table_v2 {
 	struct hash_table_entry entries[HASH_TABLE_CAPACITY];
-	//lock per bucket
-    pthread_mutex_t bucket_mutexes[HASH_TABLE_CAPACITY];
 };
 
 struct hash_table_v2 *hash_table_v2_create()
@@ -46,7 +45,7 @@ struct hash_table_v2 *hash_table_v2_create()
 	//lock per bucket
     for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i)
     {
-        if (pthread_mutex_init(&hash_table->bucket_mutexes[i], NULL) != 0)
+        if (pthread_mutex_init(&bucket_mutexes[i], NULL) != 0)
         {
             int err = errno;
             perror("bucket_mutex_init");
@@ -120,7 +119,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	//insetad of creating new node, we find node through get list entry, override value to value we are trying to insert
 	//exit out of function as soon as we do that
     size_t bucket_index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
-    pthread_mutex_t *bucket_mutex = &hash_table->bucket_mutexes[bucket_index];
+    pthread_mutex_t *bucket_mutex = &bucket_mutexes[bucket_index];
     if (pthread_mutex_lock(bucket_mutex) != 0)
     {
         int err = errno;
@@ -186,7 +185,7 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 {
     for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i)
     {
-        if (pthread_mutex_destroy(&hash_table->bucket_mutexes[i]) != 0)
+        if (pthread_mutex_destroy(&bucket_mutexes[i]) != 0)
         {
             int err = errno;
             perror("bucket_mutex_init");

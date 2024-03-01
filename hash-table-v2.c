@@ -17,7 +17,7 @@ struct list_entry {
 
 SLIST_HEAD(list_head, list_entry);
 static pthread_mutex_t mutex2;
-static pthread_mutex_t mutex3;
+// static pthread_mutex_t mutex3;
 
 struct hash_table_entry {
 	struct list_head list_head;
@@ -41,12 +41,12 @@ struct hash_table_v2 *hash_table_v2_create()
 		perror("init2");
 		exit(err);
 	}
-	if (pthread_mutex_init(&mutex3, NULL) != 0)
-	{
-		int err = errno;
-		perror("init3");
-		exit(err);
-	}
+	// if (pthread_mutex_init(&mutex3, NULL) != 0)
+	// {
+	// 	int err = errno;
+	// 	perror("init3");
+	// 	exit(err);
+	// }
 	return hash_table;
 }
 
@@ -167,12 +167,12 @@ void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 		perror("destroy2");
 		exit(err);
 	}
-	if (pthread_mutex_destroy(&mutex3) != 0)
-	{
-		int err = errno;
-		perror("destroy3");
-		exit(err);
-	}
+	// if (pthread_mutex_destroy(&mutex3) != 0)
+	// {
+	// 	int err = errno;
+	// 	perror("destroy3");
+	// 	exit(err);
+	// }
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		struct list_head *list_head = &entry->list_head;

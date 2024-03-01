@@ -97,13 +97,13 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 
 	//get notion of given that bucket, get buckets head (start of linked list)
 	//LOCK HERE B/C 2 THREADS OF SAME BUCKET, MAY POINT TO SAME ONE
+	struct list_head *list_head = &hash_table_entry->list_head;
 	if (pthread_mutex_lock(&mutex2) != 0)
 	{
 		int err = errno;
 		perror("lock2");
 		exit(err);
 	}
-	struct list_head *list_head = &hash_table_entry->list_head;
 	//get list entry, prop of hash table: no 2 elements can have same key, to prevent 2 nodes having same key, call this
 	//hash table key and head, given bucket that we were indexed into, do linear scan in that buckets LL, and check that key trying to insert doesnt exist in LL
 	//LOCK HERE FOR CASE THAT 2 WITH SAME KEY WILL THINK KEY DOES NOT EXIST YET

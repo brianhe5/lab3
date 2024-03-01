@@ -18,6 +18,8 @@ struct list_entry {
 };
 
 SLIST_HEAD(list_head, list_entry);
+static pthread_mutex_t mutex2;
+static pthread_mutex_t mutex3;
 
 struct hash_table_entry {
 	struct list_head list_head;
@@ -34,6 +36,18 @@ struct hash_table_v2 *hash_table_v2_create()
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		SLIST_INIT(&entry->list_head);
+	}
+	if (pthread_mutex_init(&mutex2, NULL) != 0)
+	{
+		int err = errno;
+		perror("init2");
+		exit(err);
+	}
+	if (pthread_mutex_init(&mutex3, NULL) != 0)
+	{
+		int err = errno;
+		perror("init3");
+		exit(err);
 	}
 	return hash_table;
 }
@@ -76,25 +90,11 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
                              const char *key,
                              uint32_t value)
 {
-	static pthread_mutex_t mutex2;
-	static pthread_mutex_t mutex3;
-	if (pthread_mutex_init(&mutex2, NULL) != 0)
-	{
-		int err = errno;
-		perror("init2");
-		exit(err);
-	}
-	if (pthread_mutex_init(&mutex3, NULL) != 0)
-	{
-		int err = errno;
-		perror("init3");
-		exit(err);
-	}
 	//3 param: hash table, key-value pair
 	//pass in hash table as well as key: given table, take in key, pass through hash func, get index into hash table corresponding to key
 	//DONT LOCK HERE B/C JUST GETTING INDEX OF HASH TABLE ITSELF
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
-	
+
 	//get notion of given that bucket, get buckets head (start of linked list)
 	//LOCK HERE B/C 2 THREADS OF SAME BUCKET, MAY POINT TO SAME ONE
 	if (pthread_mutex_lock(&mutex2) != 0)
@@ -142,18 +142,6 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 		perror("unlock3");
 		exit(err);
 	}
-	if (pthread_mutex_destroy(&mutex2) != 0)
-	{
-		int err = errno;
-		perror("destroy2");
-		exit(err);
-	}
-	if (pthread_mutex_destroy(&mutex3) != 0)
-	{
-		int err = errno;
-		perror("destroy3");
-		exit(err);
-	}
 }
 
 uint32_t hash_table_v2_get_value(struct hash_table_v2 *hash_table,
@@ -168,6 +156,18 @@ uint32_t hash_table_v2_get_value(struct hash_table_v2 *hash_table,
 
 void hash_table_v2_destroy(struct hash_table_v2 *hash_table)
 {
+	if (pthread_mutex_destroy(&mutex2) != 0)
+	{
+		int err = errno;
+		perror("destroy2");
+		exit(err);
+	}
+	if (pthread_mutex_destroy(&mutex3) != 0)
+	{
+		int err = errno;
+		perror("destroy3");
+		exit(err);
+	}
 	for (size_t i = 0; i < HASH_TABLE_CAPACITY; ++i) {
 		struct hash_table_entry *entry = &hash_table->entries[i];
 		struct list_head *list_head = &entry->list_head;

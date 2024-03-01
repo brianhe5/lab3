@@ -53,21 +53,9 @@ struct hash_table_v2 *hash_table_v2_create()
 static struct hash_table_entry *get_hash_table_entry(struct hash_table_v2 *hash_table,
                                                      const char *key)
 {
-	if (pthread_mutex_lock(&mutex3) != 0)
-	{
-		int err = errno;
-		perror("lock3");
-		exit(err);
-	}
 	assert(key != NULL);
 	uint32_t index = bernstein_hash(key) % HASH_TABLE_CAPACITY;
 	struct hash_table_entry *entry = &hash_table->entries[index];
-	if(pthread_mutex_unlock(&mutex3) != 0)
-	{
-		int err = errno;
-		perror("unlock3");
-		exit(err);
-	}
 	return entry;
 }
 
@@ -103,6 +91,7 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	//3 param: hash table, key-value pair
 	//pass in hash table as well as key: given table, take in key, pass through hash func, get index into hash table corresponding to key
 	//DONT LOCK HERE B/C JUST GETTING INDEX OF HASH TABLE ITSELF
+
 	struct hash_table_entry *hash_table_entry = get_hash_table_entry(hash_table, key);
 
 	//get notion of given that bucket, get buckets head (start of linked list)

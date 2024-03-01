@@ -127,13 +127,14 @@ void hash_table_v2_add_entry(struct hash_table_v2 *hash_table,
 	//if list entry is null, creates a new node for new entry
 	//no same key, allocate memory for new ndode
 	//assign key and value, insert into LL now
+
+	list_entry = calloc(1, sizeof(struct list_entry));
 	if (pthread_mutex_lock(&mutex3) != 0)
 	{
 		int err = errno;
 		perror("lock3");
 		exit(err);
 	}
-	list_entry = calloc(1, sizeof(struct list_entry));
 	list_entry->key = key;
 	list_entry->value = value;
 	//LOCK HERE FOR CASE OF POSSIBLE INSERTION TO SAME HEAD
